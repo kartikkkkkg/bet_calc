@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Betting Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-4">Betting Calculator</h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="teamA">Team A Name:</label>
+                    <input type="text" id="teamA" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="oddsA">Odds for Team A:</label>
+                    <input type="number" id="oddsA" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="betA">Bet for Team A:</label>
+                    <input type="number" id="betA" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Did Team A hit a six in the first 4 overs?</label>
+                    <div>
+                        <button type="button" class="btn btn-primary mr-2" onclick="document.getElementById('sixA').value = 'yes'">Yes</button>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('sixA').value = 'no'">No</button>
+                        <input type="hidden" id="sixA" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="teamB">Team B Name:</label>
+                    <input type="text" id="teamB" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="oddsB">Odds for Team B:</label>
+                    <input type="number" id="oddsB" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="betB">Bet for Team B:</label>
+                    <input type="number" id="betB" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Did Team B hit a six in the first 4 overs?</label>
+                    <div>
+                        <button type="button" class="btn btn-primary mr-2" onclick="document.getElementById('sixB').value = 'yes'">Yes</button>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('sixB').value = 'no'">No</button>
+                        <input type="hidden" id="sixB" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Winner</label>
+            <div>
+                <button type="button" class="btn btn-success mr-2" onclick="document.getElementById('winner').value = 'A'">Team A</button>
+                <button type="button" class="btn btn-danger" onclick="document.getElementById('winner').value = 'B'">Team B</button>
+                <input type="hidden" id="winner" required>
+            </div>
+        </div>
+
+        <button onclick="calculate()" class="btn btn-primary btn-lg btn-block">Calculate</button>
+
+        <div id="result" class="mt-4"></div>
+    </div>
+
+    <script>
+        function calculate() {
+            const teamA = document.getElementById("teamA").value;
+            const teamB = document.getElementById("teamB").value;
+            const oddsA = parseFloat(document.getElementById("oddsA").value);
+            const betA = parseFloat(document.getElementById("betA").value);
+            const sixA = document.getElementById("sixA").value.toLowerCase() === 'yes';
+            const oddsB = parseFloat(document.getElementById("oddsB").value);
+            const betB = parseFloat(document.getElementById("betB").value);
+            const sixB = document.getElementById("sixB").value.toLowerCase() === 'yes';
+            const winner = document.getElementById("winner").value;
+
+            let payoutA = 0;
+            let payoutB = 0;
+            let profitA = 0;
+            let profitB = 0;
+            let totalProfit = 0;
+            let totalBet = betA + betB;
+            let result = "";
+
+            if (sixA && winner !== 'A') {
+                payoutA = Math.min(betA * oddsA, 2000);
+                profitA = payoutA - betA;
+                totalProfit += profitA;
+                result += teamA + " hit a six in the first 4 overs but lost the match! ";
+            } else if (winner !== 'A') {
+                if (!sixA) {
+                    payoutA = 0;
+                    profitA = -betA;
+                } else {
+                    payoutA = Math.min(betA * oddsA, 2000);
+                    profitA = payoutA - betA;
+                }
+                totalProfit += profitA;
+            }
+
+            if (sixB && winner !== 'B') {
+                payoutB = Math.min(betB * oddsB, 2000);
+                profitB = payoutB - betB;
+                totalProfit += profitB;
+                result += teamB + " hit a six in the first 4 overs but lost the match! ";
+            } else if (winner !== 'B') {
+                if (!sixB) {
+                    payoutB = 0;
+                    profitB = -betB;
+                } else {
+                    payoutB = Math.min(betB * oddsB, 2000);
+                    profitB = payoutB - betB;
+                }
+                totalProfit += profitB;
+            }
+
+            if (winner === 'A') {
+                payoutA = betA * oddsA;
+                profitA = payoutA - betA;
+                totalProfit += profitA;
+                result += teamA + " won! ";
+            } else if (winner === 'B') {
+                payoutB = betB * oddsB;
+                profitB = payoutB - betB;
+                totalProfit += profitB;
+                result += teamB + " won! ";
+            }
+
+            document.getElementById("result").innerHTML = `
+                <p>${result}</p>
+                <p>Potential payout for ${teamA}: ${payoutA.toFixed(2)}, Profit: <span class="${profitA < 0 ? 'loss' : 'profit'}">${profitA.toFixed(2)}</span></p>
+                <p>Potential payout for ${teamB}: ${payoutB.toFixed(2)}, Profit: <span class="${profitB < 0 ? 'loss' : 'profit'}">${profitB.toFixed(2)}</span></p>
+                <p>Total Bet: ${totalBet.toFixed(2)}</p> 
+                <p>Total Payout: ${(payoutA + payoutB).toFixed(2)}</p>
+                <p>Total Profit: <span class="${totalProfit < 0 ? 'loss' : 'profit'}">${totalProfit.toFixed(2)}</span></p>
+            `;
+        }
+    </script>
+</body>
+</html>
